@@ -1,0 +1,95 @@
+<html>
+  <head>
+    <style type="text/css">
+      body { font: 500 14px Monaco, Courier; -webkit-font-smoothing: antialiased; }
+      table { border: 1px solid black; margin: 20px 0; }
+      th { background:#eee; padding:0 20px 0 4px; font-weight: normal; }
+      textarea { padding: 4px; height: 50vh; width: 100%; background: #eee; }
+      @keyframes uptick { 0% { color: green; } 50% { color: initial; } }
+      @keyframes downtick { 0% { color: red; } 50% { color: initial; } }
+      .uptick { animation: uptick 3s; }
+      .downtick { animation: downtick 3s; }
+      .positive { color: green; }
+      .negative { color: red; }
+  </style>
+  </head>
+  <body>
+    <h3>Stream</h3>
+    <button onclick="javascript:subscribe('EFERT')">EFERT</button>
+    <button onclick="javascript:subscribe('LUCK')">LUCK</button>
+    <button onclick="javascript:subscribe('TRG')">TRG</button>
+    <button onclick="javascript:subscribe('GATM')">GATM</button>
+    <button onclick="javascript:subscribe('KSE100')">KSE100</button>
+    <button onclick="javascript:subscribe('EFERT,LUCK,TRG,GATM')">EFERT,LUCK,HASCOL,GATM</button>
+    <input type="text" id="ticker" /><button onclick="javascript:subscribe(document.getElementById('ticker').value)">Watch</button>
+
+    <table>
+      <tr><th>Symbol</th><th>Price</th><th>Change</th><th>Change %</th></tr>
+      <tr symbol=""><td field="symbol"></td><td field="price"></td><td field="change"></td><td field="percentage"></td></tr>
+    </table>
+    <textarea id="stream"></textarea>
+
+
+
+
+
+    <script>
+      function log(line) {
+        const stream = document.getElementById("stream");
+        stream.value += line + "\n";
+        stream.scrollTop = stream.scrollHeight;
+        return true;
+      };
+
+      function update(field, symbol, value) {
+        const node = document.querySelectorAll(`[symbol=${symbol}] [field=${field}]`)[0];
+
+        if (field == 'price') {
+          let dir = value - (parseFloat(node.textContent) || 0);
+          setTimeout(() => node.className = dir > 0 ? 'uptick' : dir < 0 ? 'downtick' : '');
+        }
+        if (field == 'change') {
+          node.className = (value > 0 ? 'positive' : value < 0 ? 'negative' : '')
+        }
+
+        node.innerHTML = value || '';
+      };
+
+      function table(t) {
+        const tick = JSON.parse(t);
+
+        update("change", tick.symbol, tick.change);
+        update("price", tick.symbol, tick.price < 3000 ? tick.price : Math.round(tick.price));
+        update("percentage", tick.symbol, Math.round(((tick.change) / tick.price) * 1000) / 100);
+        update("symbol", tick.symbol, tick.symbol);
+        // tick directionality data is incorrect
+        // update("dir", tick.symbol, tick.dir > 0 ? '▲'+tick.dir : '▼'+tick.dir);
+      };
+
+      function subscribe(symbols) {
+        log(`Subscribe ${symbols}`);
+        ws.send(symbols);
+        symbols.split(',').forEach(symbol => {
+          if (document.querySelectorAll(`[symbol=${symbol}]`).length) return;
+          const row = document.querySelector('table tr:nth-of-type(2)').cloneNode(true);
+          row.setAttribute('symbol', symbol)
+          row.querySelectorAll('[field]').forEach(e => e.innerHTML = '');
+          row.querySelector('[field=symbol]').innerHTML = symbol;
+          document.querySelector('tbody').appendChild(row);
+        });
+      }
+
+      window.addEventListener("load", function () {
+        connect = () => {
+          window.ws = new WebSocket("wss://" + window.location.host);
+          ws.onerror = (e) => log("ERROR", e) && ws.close();
+          ws.onclose = (e) => setTimeout(() => connect(), 3000);
+          ws.onmessage = (e) => log(e.data) && table(e.data);
+          ws.onopen = (e) => subscribe("KSE100,TRG");
+        };
+        connect();
+      }, false);
+
+    </script>
+  </body>
+</html>

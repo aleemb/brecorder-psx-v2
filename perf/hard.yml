@@ -1,0 +1,11 @@
+config:
+  target: "wss://wss.newskit.com:3001"
+  phases:
+    - duration: 200
+      arrivalRate: 1000
+      rampTo: 15000
+scenarios:
+  - engine: "ws"
+    flow:
+      - send: "HASCOL"
+      - think: 30

@@ -1,0 +1,31 @@
+{
+  "name": "wss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon express.js",
+    "devtest": "NODE_ENV=development nodemon express.js test",
+    "prod": "NODE_ENV=production node express.js",
+    "devwss": "NODE_ENV=development nodemon server.js",
+    "prodwss": "NODE_ENV=production node server.js",
+    "test": "mocha"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^4.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "ioredis": "^4.16.3",
+    "line-by-line": "^0.1.6",
+    "utf-8-validate": "^5.0.2",
+    "ws": "^7.2.5"
+  },
+  "devDependencies": {
+    "artillery": "^1.6.0",
+    "mocha": "^7.1.2",
+    "nodemon": "^2.0.3"
+  }
+}

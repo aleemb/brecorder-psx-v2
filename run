@@ -1,0 +1,79 @@
+#!/bin/bash
+echo ""
+options=(
+    "Quit"
+    "WSS Server via Express (Serve Local)"
+    "WSS Server via Express (Serve Local; Parse Mock Feed)"
+    "WSS Server via Express (PROD WSS.NEWSKIT.COM)"
+    "Parse Companies Feed"
+    "Parse Exchange Feed"
+    "Parse Closing Feed"
+    "WSS Server Simple (DEV LOCALHOST)"
+    "WSS Server Simple (PROD WSS.NEWSKIT.COM)"
+    "Mock Feeds"
+    "Perf Tests"
+    "Test"
+)
+
+# Customise PS3 which is the prompt text for select menus (default is "#? ")
+PS3=$'\n'"Enter choice: "
+
+process () {
+    opt="$1"
+    echo $opt
+    args="$@"
+    case $opt in
+        "WSS Server via Express (Serve Local)")
+            npm run dev
+            ;;
+        "WSS Server via Express (Serve Local; Parse Mock Feed)")
+            npm run devtest
+            ;;
+        "WSS Server via Express (PROD WSS.NEWSKIT.COM)")
+            npm run prod
+            ;;
+        "Test")
+            npm test
+            ;;
+        "Parse Companies Feed")
+            node parse companies
+            ;;
+        "Parse Exchange Feed")
+            node parse exchange
+            ;;
+        "Parse Closing Feed")
+            node parse closing
+            ;;
+        "WSS Server Simple (DEV LOCALHOST)")
+            npm run devwss
+            ;;
+        "WSS Server Simple (PROD WSS.NEWSKIT.COM)")
+            npm run prodwss
+            ;;
+        "Mock Feeds")
+            cd mockfeed && ./run
+            ;;
+        "Perf Tests")
+            cd perf && ./run
+            ;;
+        "Quit")
+            ;;
+        *) echo "invalid option $opt.";;
+    esac
+    exit
+}
+
+if [[ $1 ]]; then
+    # user passed option directly via CLI
+    # menu array indices 0...n but we map to 1...n
+    item="${options[$1-1]}"
+    shift # remove first arg, so we can $@ remaining args and pass them along
+    process "$item" "$@"
+else
+    # user didn't pass in any CLI args, show the menu
+    select opt in "${options[@]}"
+    do
+        process "$opt"
+    done
+    echo ""
+fi

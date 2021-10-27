@@ -1,0 +1,43 @@
+#!/bin/bash
+echo ""
+options=(
+    "Quit"
+    "Perf Test: Easy"
+    "Perf Test: Hard"
+)
+
+# Customise PS3 which is the prompt text for select menus (default is "#? ")
+PS3=$'\n'"Enter choice: "
+
+process () {
+    opt="$1"
+    echo $opt
+    args="$@"
+    case $opt in
+        "Perf Test: Easy")
+            $(npm bin)/artillery run easy.yml
+            ;;
+        "Perf Test: Hard")
+            $(npm bin)/artillery run easy.yml
+            ;;
+        "Quit")
+            ;;
+        *) echo "invalid option $opt.";;
+    esac
+    exit
+}
+
+if [[ $1 ]]; then
+    # user passed option directly via CLI
+    # menu array indices 0...n but we map to 1...n
+    item="${options[$1-1]}"
+    shift # remove first arg, so we can $@ remaining args and pass them along
+    process "$item" "$@"
+else
+    # user didn't pass in any CLI args, show the menu
+    select opt in "${options[@]}"
+    do
+        process "$opt"
+    done
+    echo ""
+fi
